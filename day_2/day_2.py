@@ -1,3 +1,5 @@
+# Note: try to avoid mutable state as much as possible cuz the code wasn't working cuz range builder was mutable, although admittedly this code is still not as immutable as it could be.
+
 from abc import ABC, abstractmethod
 
 class RepeatingStrategy(ABC):
@@ -27,7 +29,9 @@ class RepeatingNumberChecker:
 class RangeBuilder:
     def __init__(self):
         self.ranges = []
-    def parse_range(self, range_string: str):
+    def start_ranges(self):
+        self.ranges = []
+    def add_range(self, range_string: str):
         parts = range_string.split("-")
         self._start = int(parts[0])
         self._end = int(parts[1])
@@ -46,9 +50,10 @@ class PuzzleSolver:
 
     def solve(self) -> list[int]:
         sum = 0
+        self.range_builder.start_ranges()
         with open(self._filepath) as file:
             for range_string in file.read().split(","):
-                self.range_builder.parse_range(range_string.strip())
+                self.range_builder.add_range(range_string.strip())
         for range in self.range_builder.build():
             for number in range:
                 if self.repeating_number_checker.is_repeating(str(number)):
@@ -60,11 +65,8 @@ def main():
     checker = RepeatingNumberChecker(TwiceRepeatingStrategy())
     solver1 = PuzzleSolver(checker, builder1, "day_2/puzzle_input.txt")
     print("Twice: " + str(solver1.solve()))
-
-    builder2 = RangeBuilder()
     checker.strategy = CompleteRepeatingStrategy()
-    solver2 = PuzzleSolver(checker, builder2, "day_2/puzzle_input.txt")
-    print("Complete: " + str(solver2.solve()))
+    print("Complete: " + str(solver1.solve()))
 
 if __name__ == "__main__":
     main()
